@@ -17,6 +17,12 @@ download.file("https://www.imls.gov/sites/default/files/2022-07/pls_fy2020_csv.z
 #unzip file
 unzip("PublicLibrariesSurvey.zip",exdir="RawData")
 
+
+#polling locations
+pollinglocations <- read.csv("https://raw.githubusercontent.com/PublicI/us-polling-places/update-2020/data/west_virginia/output/West%20Virginia_2020-11-03.csv", sep=",")
+
+write.csv(pollinglocations, "RawData/pollingLocations.csv")
+
 ```
 
 
