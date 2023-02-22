@@ -1,0 +1,22 @@
+---
+title: "File Downloads Download Script"
+author: "Lauren Moore"
+date: "2/21/2023"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(utils)
+
+#download Places of Worship File
+download.file("https://opendata.arcgis.com/api/v3/datasets/97603afcff00443f874acbe03c9e794a_0/downloads/data?format=csv&spatialRefId=3857&where=1%3D1", "./RawData/PlacesofWorship.csv")
+  
+#Download zip file from Public Libraries Survey
+download.file("https://www.imls.gov/sites/default/files/2022-07/pls_fy2020_csv.zip", "./PublicLibrariesSurvey.zip")
+
+#unzip file
+unzip("PublicLibrariesSurvey.zip",exdir="RawData")
+
+```
+
+
