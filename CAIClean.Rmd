@@ -1,0 +1,258 @@
+---
+title: "CAIClean"
+author: "Lauren Moore"
+date: "2/22/2023"
+output: github_document
+---
+
+```{r}
+#load packages
+library(tidyverse) # I literally don't know how anyone uses R without this.
+#library(readxl) # For reading Excel files
+library(usdata) # has a nice function for converting state abbreviations to state names and vis versa
+#library(utils) # Utilities. Used to unzip a download.
+```
+
+```{r}
+#file content
+fileList <- list.files(path="./RawData", pattern="*.csv")
+addPath <- function(x){paste0("./RawData/",x)}
+pathList <- lapply(fileList, addPath)
+fileContent <- lapply(pathList, read.csv)
+```
+
+```{r}
+#import all files
+ChildCareCenters <- fileContent[[1]]
+CollegesAndUniversities <- fileContent[[2]]
+Courthouses <- fileContent[[3]]
+FireStations <- fileContent[[4]]
+LibrariesFromTilson <- fileContent[[5]] #already cleaned
+Churches <- fileContent[[6]]
+LibrariesSurvey <- fileContent[[7]]
+PollingLocations <- fileContent[[10]]
+PublicSchoolsK12 <- fileContent[[11]]
+SupplementalColleges <- fileContent[[12]]
+```
+
+```{r}
+#clean Child Care Centers
+cleanChildCareCenters <- 
+    ChildCareCenters %>%
+      select(
+        -ZIP4,
+        -TELEPHONE,
+        -POPULATION,
+        -COUNTRY,
+        -NAICS_CODE,
+        -SOURCE,
+        -SOURCEDATE,
+        -VAL_METHOD,
+        -VAL_DATE,
+        -WEBSITE,
+        -ST_SUBTYPE
+      ) %>% 
+      filter(STATE=="WV") %>%
+      mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
+      na.omit()
+```
+
+
+```{r}
+#clean colleges and universities
+cleanCollegeUniversity <- 
+    CollegesAndUniversities %>%
+      select(
+        -IPEDSID,
+        -ZIP4,
+        -TELEPHONE,
+        -POPULATION,
+        -COUNTRY,
+        -NAICS_CODE,
+        -SOURCE,
+        -SOURCEDATE,
+        -VAL_METHOD,
+        -VAL_DATE,
+        -WEBSITE,
+        -STFIPS,
+        -COFIPS,
+        -SECTOR,
+        -LEVEL_,
+        -HI_OFFER,
+        -DEG_GRANT,
+        -LOCALE,
+        -CLOSE_DATE,
+        -MERGE_ID,
+        -ALIAS,
+        -SIZE_SET,
+        -INST_SIZE,
+        -PT_ENROLL,
+        -FT_ENROLL,
+        -TOT_ENROLL,
+        -HOUSING,
+        -DORM_CAP,
+        -TOT_EMP,
+        -SHELTER_ID
+      ) %>% 
+      filter(STATE=="WV") %>%
+      mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
+      na.omit()
+```
+
+```{r}
+#clean courthouses
+cleanCourthouse <- 
+    Courthouses %>%
+      select(
+        -PERMANENT_IDENTIFIER,
+        -SOURCE_FEATUREID,
+        -SOURCE_DATASETID,
+        -SOURCE_DATADESC,
+        -SOURCE_ORIGINATOR,
+        -DATA_SECURITY,
+        -DISTRIBUTION_POLICY,
+        -LOADDATE,
+        -FTYPE,
+        -FCODE,
+        -ISLANDMARK,
+        -POINTLOCATIONTYPE,
+        -ADMINTYPE,
+        -ADDRESSBUILDINGNAME,
+        -GNIS_ID,
+        -FOOT_ID,
+        -COMPLEX_ID,
+        -GLOBALID
+      ) %>% 
+      filter(STATE=="WV") %>%
+      na.omit()
+```
+
+```{r}
+#clean fire stations
+cleanFireStations <- 
+    FireStations %>%
+      select(
+        -PERMANENT_IDENTIFIER,
+        -SOURCE_FEATUREID,
+        -SOURCE_DATASETID,
+        -SOURCE_DATADESC,
+        -SOURCE_ORIGINATOR,
+        -DATA_SECURITY,
+        -DISTRIBUTION_POLICY,
+        -LOADDATE,
+        -FTYPE,
+        -FCODE,
+        -ISLANDMARK,
+        -POINTLOCATIONTYPE,
+        -ADMINTYPE,
+        -ADDRESSBUILDINGNAME,
+        -GNIS_ID,
+        -FOOT_ID,
+        -COMPLEX_ID,
+        -GLOBALID
+      ) %>% 
+      filter(STATE=="WV") %>%
+      na.omit()
+```
+
+```{r}
+#clean places of worship
+#send email to Tilson
+```
+
+```{r}
+#clean libraries from survey data for cross reference
+cleanLibrarySurvey <-
+  LibrariesSurvey %>%
+      select(
+        LIBID,
+        LIBNAME,
+        ADDRESS,
+        CITY,
+        ZIP,
+        STABR,
+        LONGITUD,
+        LATITUDE
+      ) %>% 
+      filter(STABR=="WV") %>%
+      na.omit()
+```
+
+```{r}
+#clean polling locations
+cleanPollingLocations <- 
+    PollingLocations %>%
+      select(
+        -election_date,
+        -jurisdiction,
+        -jurisdiction_type,
+        -precinct_id,
+        -precinct_name,
+        -polling_place_id,
+        -location_type,
+        -notes,
+        -source,
+        -source_date,
+        -source_notes
+      ) %>% 
+      filter(state=="WV") %>%
+      na.omit()
+```
+
+```{r}
+#clean public schools k12
+cleanPublicSchoolsK12 <- 
+    PublicSchoolsK12 %>%
+      select(
+        X,
+        Y,
+        OBJECTID,
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        COUNTYFIPS,
+        LATITUDE,
+        LONGITUDE,
+        NAICS_DESC
+      ) %>% 
+      filter(STATE=="WV") %>%
+      mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
+      na.omit()
+```
+
+```{r}
+#clean supplemental colleges
+cleanPSupplementalColleges <- 
+    SupplementalColleges %>%
+      select(
+        X,
+        Y,
+        OBJECTID,
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        TYPE,
+        STATUS,
+        COUNTY,
+        COUNTYFIPS,
+        LATITUDE,
+        LONGITUDE,
+        NAICS_DESC
+      ) %>% 
+      filter(STATE=="WV") %>%
+      mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
+      na.omit()
+```
+
+
+
+
+
+
+
+
