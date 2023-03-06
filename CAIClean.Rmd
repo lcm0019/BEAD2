@@ -157,7 +157,22 @@ cleanFireStations <-
 
 ```{r}
 #clean places of worship
-#send email to Tilson
+cleanChurches <-
+  Churches %>%
+      select(
+        OBJECTID,
+        NAME,
+        STREET,
+        CITY,
+        STATE,
+        ZIP,
+        X,
+        Y
+      ) %>% 
+      filter(STATE=="WV") %>%
+      na.omit()
+#going to need to use ggmaps to get lat and long https://towardsdatascience.com/breaking-down-geocoding-in-r-a-complete-guide-1d0f8acd0d4b
+#https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::all-places-of-worship/explore?filters=eyJTVEFURSI6WyJXViJdfQ%3D%3D&location=38.762635%2C-80.138550%2C8.00
 ```
 
 ```{r}
