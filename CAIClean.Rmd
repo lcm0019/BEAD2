@@ -26,13 +26,14 @@ fileContent <- lapply(pathList, read.csv)
 ChildCareCenters <- fileContent[[1]]
 CollegesAndUniversities <- fileContent[[2]]
 Courthouses <- fileContent[[3]]
-FireStations <- fileContent[[4]]
-LibrariesFromTilson <- fileContent[[5]] #already cleaned
-Churches <- fileContent[[6]]
-LibrariesSurvey <- fileContent[[7]]
-PollingLocations <- fileContent[[10]]
-PublicSchoolsK12 <- fileContent[[11]]
-SupplementalColleges <- fileContent[[12]]
+ExtensionOffices <- fileContent[[4]]
+FireStations <- fileContent[[5]]
+LibrariesFromTilson <- fileContent[[6]] #already cleaned
+Churches <- fileContent[[7]]
+LibrariesSurvey <- fileContent[[8]]
+PollingLocations <- fileContent[[11]]
+PublicSchoolsK12 <- fileContent[[12]]
+SupplementalColleges <- fileContent[[13]]
 ```
 
 ```{r}
@@ -126,6 +127,26 @@ cleanCourthouse <-
       filter(STATE=="WV") %>%
       na.omit()
 ```
+
+```{r}
+#clean Extension Offices
+cleanExtension <- 
+    ExtensionOffices %>%
+      select(
+        TYPE,
+        COUNTY,
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        LAT,
+        LONG
+      ) %>% 
+      filter(STATE=="WV") %>%
+      na.omit()
+```
+
 
 ```{r}
 #clean fire stations
@@ -240,7 +261,7 @@ cleanPublicSchoolsK12 <-
 
 ```{r}
 #clean supplemental colleges
-cleanPSupplementalColleges <- 
+cleanSupplementalColleges <- 
     SupplementalColleges %>%
       select(
         X,
