@@ -26,7 +26,7 @@ fileContent <- lapply(pathList, read.csv)
 ChildCareCenters <- fileContent[[1]]
 CollegesAndUniversities <- fileContent[[2]]
 Courthouses <- fileContent[[3]]
-ExtensionOffices <- fileContent[[4]]
+ExtensionOffices <- fileContent[[4]] #already cleaned; has some lat and long but not all
 FireStations <- fileContent[[5]]
 LibrariesFromTilson <- fileContent[[6]] #already cleaned
 Churches <- fileContent[[7]]
@@ -41,6 +41,8 @@ SupplementalColleges <- fileContent[[13]]
 cleanChildCareCenters <- 
     ChildCareCenters %>%
       select(
+        -OBJECTID,
+        -ID,
         -ZIP4,
         -TELEPHONE,
         -POPULATION,
@@ -51,10 +53,22 @@ cleanChildCareCenters <-
         -VAL_METHOD,
         -VAL_DATE,
         -WEBSITE,
-        -ST_SUBTYPE
+        -ST_SUBTYPE,
+        -X,
+        -Y,
+        -NAICS_DESC
       ) %>% 
       filter(STATE=="WV") %>%
+      filter(TYPE!="RELIGIOUS FACILITY") %>%
+      filter(TYPE!="CENTER BASED") %>% #only want school based and head start
+      filter(STATUS=="OPEN") %>% #only want open centers
       mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
+      mutate(LOCATIONTYPE="Child Care Center") %>%
+      select(
+        -TYPE,
+        -STATUS,
+        -COUNTYFIPS
+      ) %>%
       na.omit()
 ```
 
@@ -64,6 +78,9 @@ cleanChildCareCenters <-
 cleanCollegeUniversity <- 
     CollegesAndUniversities %>%
       select(
+        -X,
+        -Y,
+        -OBJECTID,
         -IPEDSID,
         -ZIP4,
         -TELEPHONE,
@@ -93,10 +110,18 @@ cleanCollegeUniversity <-
         -HOUSING,
         -DORM_CAP,
         -TOT_EMP,
-        -SHELTER_ID
+        -SHELTER_ID,
+        -NAICS_DESC
       ) %>% 
       filter(STATE=="WV") %>%
+      filter(TYPE==1) %>% #public schools
       mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
+      mutate(LOCATIONTYPE="Universities and Tech Schools") %>%
+      select(
+        -TYPE,
+        -STATUS,
+        -COUNTYFIPS
+      ) %>%
       na.omit()
 ```
 
@@ -122,31 +147,32 @@ cleanCourthouse <-
         -GNIS_ID,
         -FOOT_ID,
         -COMPLEX_ID,
-        -GLOBALID
+        -GLOBALID,
+        -X,
+        -Y,
+        -OBJECTID
       ) %>% 
       filter(STATE=="WV") %>%
-      na.omit()
-```
-
-```{r}
-#clean Extension Offices
-cleanExtension <- 
-    ExtensionOffices %>%
+      mutate(COUNTY=NA) %>%
+      mutate(LATITUDE=NA) %>%
+      mutate(LONGITUDE=NA) %>%
+      mutate(COUNTYFIPSCHAR=NA) %>%
+      mutate(ZIP=ZIPCODE) %>%
+      mutate(LOCATIONTYPE="Courthouse") %>%
       select(
-        TYPE,
-        COUNTY,
         NAME,
         ADDRESS,
         CITY,
         STATE,
         ZIP,
-        LAT,
-        LONG
-      ) %>% 
-      filter(STATE=="WV") %>%
-      na.omit()
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
 ```
-
 
 ```{r}
 #clean fire stations
@@ -170,10 +196,31 @@ cleanFireStations <-
         -GNIS_ID,
         -FOOT_ID,
         -COMPLEX_ID,
-        -GLOBALID
+        -GLOBALID,
+        -X,
+        -Y,
+        -OBJECTID
       ) %>% 
       filter(STATE=="WV") %>%
-      na.omit()
+      mutate(COUNTY=NA) %>%
+      mutate(LATITUDE=NA) %>%
+      mutate(LONGITUDE=NA) %>%
+      mutate(COUNTYFIPSCHAR=NA) %>%
+      mutate(ZIP=ZIPCODE) %>%
+      mutate(LOCATIONTYPE="Courthouse") %>%
+      select(
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
 ```
 
 ```{r}
@@ -181,18 +228,34 @@ cleanFireStations <-
 cleanChurches <-
   Churches %>%
       select(
-        OBJECTID,
         NAME,
         STREET,
         CITY,
         STATE,
-        ZIP,
-        X,
-        Y
+        ZIP
       ) %>% 
       filter(STATE=="WV") %>%
-      na.omit()
-#going to need to use ggmaps to get lat and long https://towardsdatascience.com/breaking-down-geocoding-in-r-a-complete-guide-1d0f8acd0d4b
+      mutate(COUNTY=NA) %>%
+      mutate(LATITUDE=NA) %>%
+      mutate(LONGITUDE=NA) %>%
+      mutate(COUNTYFIPSCHAR=NA) %>%
+      mutate(ADDRESS=STREET) %>%
+      mutate(LOCATIONTYPE="Place of Worship") %>%
+      select(
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
+
+#https://towardsdatascience.com/breaking-down-geocoding-in-r-a-complete-guide-1d0f8acd0d4b
 #https://hifld-geoplatform.opendata.arcgis.com/datasets/geoplatform::all-places-of-worship/explore?filters=eyJTVEFURSI6WyJXViJdfQ%3D%3D&location=38.762635%2C-80.138550%2C8.00
 ```
 
@@ -201,7 +264,6 @@ cleanChurches <-
 cleanLibrarySurvey <-
   LibrariesSurvey %>%
       select(
-        LIBID,
         LIBNAME,
         ADDRESS,
         CITY,
@@ -211,7 +273,26 @@ cleanLibrarySurvey <-
         LATITUDE
       ) %>% 
       filter(STABR=="WV") %>%
-      na.omit()
+      mutate(STATE=STABR) %>%
+      mutate(COUNTY=NA) %>%
+      mutate(LATITUDE=NA) %>%
+      mutate(LONGITUDE=NA) %>%
+      mutate(COUNTYFIPSCHAR=NA) %>%
+      mutate(NAME=LIBNAME) %>%
+      mutate(LOCATIONTYPE="Library") %>%
+      select(
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
 ```
 
 ```{r}
@@ -229,10 +310,31 @@ cleanPollingLocations <-
         -notes,
         -source,
         -source_date,
-        -source_notes
-      ) %>% 
+        -source_notes,
+        -X
+      ) %>%
       filter(state=="WV") %>%
-      na.omit()
+      separate(address, into=c("ADDRESS", "CITY", "STATEZIP"), sep=",") %>%
+      separate(STATEZIP, into=c("delete", "STATE", "ZIP"), sep=" ") %>%
+      mutate(COUNTY=county_name) %>%
+      mutate(LATITUDE=NA) %>%
+      mutate(LONGITUDE=NA) %>%
+      mutate(COUNTYFIPSCHAR=NA) %>%
+      mutate(LOCATIONTYPE="Polling Location") %>%
+      mutate(NAME=name) %>%
+      select(
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
 ```
 
 ```{r}
@@ -240,9 +342,6 @@ cleanPollingLocations <-
 cleanPublicSchoolsK12 <- 
     PublicSchoolsK12 %>%
       select(
-        X,
-        Y,
-        OBJECTID,
         NAME,
         ADDRESS,
         CITY,
@@ -251,12 +350,24 @@ cleanPublicSchoolsK12 <-
         COUNTY,
         COUNTYFIPS,
         LATITUDE,
-        LONGITUDE,
-        NAICS_DESC
+        LONGITUDE
       ) %>% 
       filter(STATE=="WV") %>%
       mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
-      na.omit()
+      mutate(LOCATIONTYPE="K12 Public School") %>%
+      select(
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
 ```
 
 ```{r}
@@ -264,9 +375,6 @@ cleanPublicSchoolsK12 <-
 cleanSupplementalColleges <- 
     SupplementalColleges %>%
       select(
-        X,
-        Y,
-        OBJECTID,
         NAME,
         ADDRESS,
         CITY,
@@ -277,17 +385,40 @@ cleanSupplementalColleges <-
         COUNTY,
         COUNTYFIPS,
         LATITUDE,
-        LONGITUDE,
-        NAICS_DESC
+        LONGITUDE
       ) %>% 
       filter(STATE=="WV") %>%
       mutate(COUNTYFIPSCHAR=paste0("_",as.character(COUNTYFIPS),sep="")) %>%
-      na.omit()
+      mutate(LOCATIONTYPE="Community College") %>%
+      select(
+        NAME,
+        ADDRESS,
+        CITY,
+        STATE,
+        ZIP,
+        COUNTY,
+        LATITUDE,
+        LONGITUDE,
+        COUNTYFIPSCHAR,
+        LOCATIONTYPE
+      )
+      #na.omit()
 ```
 
+```{r}
+cleanish <-
+  cleanChildCareCenters %>%
+  rbind(cleanCollegeUniversity) %>%
+  rbind(cleanCourthouse) %>%
+  rbind(cleanFireStations) %>%
+  rbind(cleanChurches) %>%
+  rbind(cleanLibrarySurvey) %>%
+  rbind(cleanPollingLocations) %>%
+  rbind(cleanPublicSchoolsK12) %>%
+  rbind(cleanSupplementalColleges)
 
-
-
+write.csv(cleanish, "cleanish.csv")
+```
 
 
 
