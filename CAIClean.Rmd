@@ -415,11 +415,15 @@ cleanish <-
   rbind(cleanLibrarySurvey) %>%
   rbind(cleanPollingLocations) %>%
   rbind(cleanPublicSchoolsK12) %>%
-  rbind(cleanSupplementalColleges)
+  rbind(cleanSupplementalColleges) %>%
+  distinct(NAME)
 
 write.csv(cleanish, "cleanish.csv")
 ```
 
+```{r}
+
+```
 
 
 
