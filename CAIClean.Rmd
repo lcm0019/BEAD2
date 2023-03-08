@@ -422,7 +422,31 @@ write.csv(cleanish, "cleanish.csv")
 ```
 
 ```{r}
+#county and cities with county fips
+WVFIPS <- read_csv("./CountyFipsRaw/WVFIPS.csv")
+CountyZip <- read_csv("./CountyFipsRaw/zipcity.csv")
 
+#clean zips and county
+cleanCountyZip <-
+  CountyZip %>%
+    select( 
+      zip,
+      primary_city,
+      county
+      ) %>%
+    separate(county, into=c("county1", "delete"), sep=" ") %>%
+    mutate(COUNTY = toupper(county1)) %>%
+    mutate(ZIP=zip) %>%
+    mutate(CITY=primary_city) %>%
+    select( 
+      ZIP,
+      CITY,
+      COUNTY
+      ) 
+
+
+
+ZipsCountyFips <- left_join(cleanCountyZip, WVFIPS, by="COUNTY")
 ```
 
 
